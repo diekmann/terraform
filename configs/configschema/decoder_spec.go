@@ -1,10 +1,19 @@
 package configschema
 
 import (
+	"sync"
+
 	"github.com/hashicorp/hcl/v2/hcldec"
 )
 
 var mapLabelNames = []string{"key"}
+
+// decoderSpecMutex protects all Block.decoderSpec attribute. The DecoderSpec
+// method is often called concurrently, and reading and writing that field must
+// be serialized. The normal method of using an accompanying mutex within the
+// struct is not currently feasible with the Block type, because it is assigned
+// within a NestBlock by value.
+var decoderSpecMutex sync.Mutex
 
 // DecoderSpec returns a hcldec.Spec that can be used to decode a HCL Body
 // using the facilities in the hcldec package.
@@ -17,6 +26,14 @@ func (b *Block) DecoderSpec() hcldec.Spec {
 	if b == nil {
 		return ret
 	}
+
+	decoderSpecMutex.Lock()
+	// return the stored spec if we've already generated it
+	if b.decoderSpec != nil {
+		defer decoderSpecMutex.Unlock()
+		return b.decoderSpec
+	}
+	decoderSpecMutex.Unlock()
 
 	for name, attrS := range b.Attributes {
 		ret[name] = attrS.decoderSpec(name)
@@ -110,6 +127,10 @@ func (b *Block) DecoderSpec() hcldec.Spec {
 			continue
 		}
 	}
+
+	decoderSpecMutex.Lock()
+	b.decoderSpec = ret
+	decoderSpecMutex.Unlock()
 
 	return ret
 }
