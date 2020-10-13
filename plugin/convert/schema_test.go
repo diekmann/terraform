@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	equateEmpty   = cmpopts.EquateEmpty()
-	typeComparer  = cmp.Comparer(cty.Type.Equals)
-	valueComparer = cmp.Comparer(cty.Value.RawEquals)
+	equateEmpty      = cmpopts.EquateEmpty()
+	typeComparer     = cmp.Comparer(cty.Type.Equals)
+	valueComparer    = cmp.Comparer(cty.Value.RawEquals)
+	ignoreUnexported = cmpopts.IgnoreUnexported(configschema.Block{})
 )
 
 // Test that we can convert configschema to protobuf types and back again.
@@ -181,8 +182,8 @@ func TestConvertSchemaBlocks(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			converted := ProtoToConfigSchema(tc.Block)
-			if !cmp.Equal(converted, tc.Want, typeComparer, valueComparer, equateEmpty) {
-				t.Fatal(cmp.Diff(converted, tc.Want, typeComparer, valueComparer, equateEmpty))
+			if !cmp.Equal(converted, tc.Want, typeComparer, valueComparer, equateEmpty, ignoreUnexported) {
+				t.Fatal(cmp.Diff(converted, tc.Want, typeComparer, valueComparer, equateEmpty, ignoreUnexported))
 			}
 		})
 	}

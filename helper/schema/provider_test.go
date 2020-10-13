@@ -91,8 +91,8 @@ func TestProviderGetSchema(t *testing.T) {
 		t.Fatalf("unexpected error %s", err)
 	}
 
-	if !cmp.Equal(got, want, equateEmpty, typeComparer) {
-		t.Error("wrong result:\n", cmp.Diff(got, want, equateEmpty, typeComparer))
+	if !cmp.Equal(got, want, equateEmpty, typeComparer, ignoreUnexported) {
+		t.Error("wrong result:\n", cmp.Diff(got, want, equateEmpty, typeComparer, ignoreUnexported))
 	}
 }
 

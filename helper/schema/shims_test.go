@@ -21,9 +21,10 @@ import (
 )
 
 var (
-	typeComparer  = cmp.Comparer(cty.Type.Equals)
-	valueComparer = cmp.Comparer(cty.Value.RawEquals)
-	equateEmpty   = cmpopts.EquateEmpty()
+	typeComparer     = cmp.Comparer(cty.Type.Equals)
+	valueComparer    = cmp.Comparer(cty.Value.RawEquals)
+	equateEmpty      = cmpopts.EquateEmpty()
+	ignoreUnexported = cmpopts.IgnoreUnexported(configschema.Block{})
 )
 
 func testApplyDiff(t *testing.T,
